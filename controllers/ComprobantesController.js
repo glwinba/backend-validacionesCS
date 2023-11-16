@@ -1,50 +1,47 @@
 import { response, request } from "express";
 import dotenv from 'dotenv';
+import axios from 'axios';
+
 dotenv.config();
 
 const urlBase = process.env.BASE_URL_CS;
 
 //funcion donde obtenemos los comprobantes y reemplazamos las url del alojamiento
 export const ComprobantesControler = async (req= request, res = response)=>{
-    const headersAuthorization = req.headers['authorization'];
-    const [ ,token ] = headersAuthorization.split(' ');
-    const urlParams = req.url;
-    
-    try {
-        const data = await getComprobantes(token, urlParams);
-        if(!data) throw Error('Response not found');
+    const headersAuthorization = req.headers['authorization'] || false;
+    if(headersAuthorization){ //comprobamos que exista un parámetro de autorización
+        const [ ,token ] = headersAuthorization.split(' ');
+        const urlParams = req.url;
+        try {
+            const response = await getComprobantesRequestCS(token, urlParams);
 
-        const comprobantes = data.comprobantes.filter(comprobante=>{
-            comprobante.alojamiento = remplazarAlojamiento(comprobante);
-            return comprobante;
-        });
-    
-        data.comprobantes = comprobantes;
-        data.comprobantePagina = comprobantes.length;
-        console.log(typeof data);
-        res.status(200).json({data});
-    } catch (error) {
-        res.status(404).json({ msg:error.message });
+            if(response.status !== 200) throw Error('Petición fallada con estatus 401');
+            
+            const { data } = response;
+                    
+            data.comprobantes = filtradoComprobantes(data); //filtamos y reemplazamos
+            data.comprobantePagina = data.comprobantes.length;
+            
+            res.status(200).json({data});
+        } catch (error) {
+            res.status(404).json({ msg:error.message });
+        }
+    }else{
+        res.status(404).json({ msg:'Token no encontrado' });
     }
 }
 
 //request de comprobantes
-const getComprobantes = async (token, url)=>{
-    if(token){
-        try {
-            const response = await fetch(`${urlBase}${url}`,{
-                headers:{
-                    'Authorization':`Bearer ${token}` 
-                }
-            });
-            return await response.json();
-        } catch (error) {
-            return false;
-        }
-    }else{
-        res.status(401).json({ msg:'Token not found' })
+const   getComprobantesRequestCS = async (token, url)=>{
+    try {
+        return await axios.get(`${urlBase}${url}`,{
+            headers:{
+                'Authorization':`Bearer ${token}` 
+            }
+        });
+    } catch (error) {
+        return {error: error.message, status:401};
     }
-    
 }
 
 //remplazamos el los urls del alojamiento
@@ -60,4 +57,11 @@ const remplazarAlojamiento = (comprobante)=>{
         path_PDF: urL_PDF ? urL_PDF.replace(urlBase,nuevoURL) : null,
         path_PDF_ACUSE: urL_PDF_ACUSE ? urL_PDF_ACUSE.replace(urlBase,nuevoURL) : null,
     }
+}
+
+const filtradoComprobantes = (data=[])=>{
+    return data.comprobantes.filter(comprobante=>{
+        comprobante.alojamiento = remplazarAlojamiento(comprobante);
+        return comprobante;
+    });
 }

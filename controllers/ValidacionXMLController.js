@@ -29,7 +29,7 @@ const getValidacion = async (file, token)=>{
     const formData = new FormData();
     const blob = new Blob([Buffer.from(file.buffer)], { type: file.mimetype }); 
     formData.append('archivoXML',blob, file.originalname);
-    const url = `${urlBase}Validaciones/XML`;
+    const url = `${urlBase}/Validaciones/XML`;
     const response = await axios.post(url,formData,{
         headers:{
             "Authorization": `Bearer ${token}`,

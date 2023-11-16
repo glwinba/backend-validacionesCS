@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ValidarXMLController } from "../controllers/ValidacionXML.js";
+import { ValidarXMLController } from "../controllers/ValidacionXMLController.js";
 
 const router = Router();
 

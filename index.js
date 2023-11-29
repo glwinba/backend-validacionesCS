@@ -25,6 +25,9 @@ const fileFilter = (req, file, cb)=>{
 const upload = multer({ storage, fileFilter });
 app.use(logger('dev')); 
 
+app.use('/v1',(req, res)=>{
+    res.status(200).json({ msg: 'Servicio de validación de cfdi\'s' })
+})
 app.use('/v1',LoginRoutes);
 app.use('/v1',ComprobantesRoutes);
 app.use('/v1',DocumentosRoutes);

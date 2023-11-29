@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Proyecto de validaciones de CFDI's",
   "main": "app.js",
-  "type": "commonjs",
+  "type": "module",
   "author": "GLWINBA",
   "scripts": {
     "dev": "node --watch index.js",
